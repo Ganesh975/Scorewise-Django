@@ -48,24 +48,48 @@ def process_prompt(request):
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from google.cloud import storage
+import io
+
 @api_view(['POST'])
 def process_image_and_prompt(request):
-    """API view to process the uploaded image and generate a response using a prompt."""
+    """API view to process the image fetched from Firebase Storage using a prompt."""
     prompt = request.data.get("prompt", "")
-    image_file = request.FILES.get("image")
-
-    if not image_file:
-        return Response({"error": "No image provided."}, status=status.HTTP_400_BAD_REQUEST)
+    image_id = request.data.get("image_id", "")
+    
+    if not image_id:
+        return Response({"error": "No image ID provided."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Read the image file as byte content
-        image_bytes = image_file.read()
-        response_text = image_process(prompt, image_bytes)
+        # Fetch the image from Firebase Storage
+        image_bytes = fetch_image_from_firebase(image_id)
 
-        if response_text:
-            return Response({"response": response_text}, status=status.HTTP_200_OK)
+        if image_bytes:
+            response_text = image_process(prompt, image_bytes)
+
+            if response_text:
+                return Response({"response": response_text}, status=status.HTTP_200_OK)
+            else:
+                return Response({"error": "Failed to process the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            return Response({"error": "Failed to process the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": "Failed to fetch the image from Firebase."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     except Exception as e:
         return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+def fetch_image_from_firebase(image_id):
+    """Fetches the image data from Firebase Storage using the image ID."""
+    client = storage.Client()  # Create a client
+    bucket_name = 'scorewise-c3220.appspot.com'  # Replace with your Firebase Storage bucket name
+    bucket = client.get_bucket(bucket_name)
+    
+    try:
+        blob = bucket.blob(image_id)  # Use the image ID to create a blob reference
+        image_data = blob.download_as_bytes()  # Download the image as bytes
+        return image_data
+    except Exception as e:
+        print(f"Error fetching image from Firebase: {e}")
+        return None
