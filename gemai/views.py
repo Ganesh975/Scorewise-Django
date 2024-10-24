@@ -99,3 +99,51 @@ def fetch_image_from_firebase(file_url):
     except Exception as e:
         print(f"Error fetching image from Firebase URL: {e}")
         return None
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from groq import Groq
+# Define your Groq API key and base URL
+GROQ_API_KEY = "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"
+GROQ_API_URL = "https://api.groq.com/v1/chat/completions"
+
+@api_view(['POST'])
+def llmagroq(request):
+    
+    
+    prompt = request.data.get("prompt", "")
+    
+    if not prompt:
+        return Response({"error": "No prompt provided."}, status=status.HTTP_400_BAD_REQUEST)
+    client = Groq(api_key="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")
+
+    completion = client.chat.completions.create(
+        model="llama3-groq-70b-8192-tool-use-preview",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        temperature=0.5,
+        max_tokens=1024,
+        top_p=0.65,
+        stream=True,
+        stop=None,
+    )
+
+    output = ""
+    for chunk in completion:
+        output += chunk.choices[0].delta.content or ""
+    
+    if output:
+        return Response({"response": output}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Failed to process the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    
+    
+        
+    
