@@ -144,6 +144,88 @@ def llmagroq(request):
         return Response({"error": "Failed to process the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from groq import Groq
+# Define your Groq API key and base URL
+GROQ_API_KEY = "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"
+GROQ_API_URL = "https://api.groq.com/v1/chat/completions"
+
+@api_view(['POST'])
+def llmagroq2(request):
+    prompt = request.data.get("prompt", "")
+    if not prompt:
+        return Response({"error": "No prompt provided."}, status=status.HTTP_400_BAD_REQUEST)
     
+    client = Groq(api_key="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")
+    completion = client.chat.completions.create(
+    model="gemma-7b-it",
+    messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ],
+    temperature=1,
+    max_tokens=1024,
+    top_p=1,
+    stream=True,
+    stop=None,
+)
+
+    output = ""
+    for chunk in completion:
+        output += chunk.choices[0].delta.content or ""
+    
+    if output:
+        return Response({"response": output}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Failed to process the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+    
+   
+import requests
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from django.views import View
+from groq import Groq
+# Define your Groq API key and base URL
+GROQ_API_KEY = "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"
+GROQ_API_URL = "https://api.groq.com/v1/chat/completions"
+
+@api_view(['POST'])
+def llmagroq3(request):
+    prompt = request.data.get("prompt", "")
+    if not prompt:
+        return Response({"error": "No prompt provided."}, status=status.HTTP_400_BAD_REQUEST)
+    
+    client = Groq(api_key="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")
+    completion = client.chat.completions.create(
+    model="gemma2-9b-it",
+    messages=[
+        {
+            "role": "user",
+            "content": prompt
+        }
+    ],
+    temperature=1.26,
+    max_tokens=4330,
+    top_p=1,
+    stream=True,
+    stop=None,
+)
+
+    output = ""
+    for chunk in completion:
+        output += chunk.choices[0].delta.content or ""
+    
+    if output:
+        return Response({"response": output}, status=status.HTTP_200_OK)
+    else:
+        return Response({"error": "Failed to process the image."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
     
