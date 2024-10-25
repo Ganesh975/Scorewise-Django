@@ -160,7 +160,7 @@ def llmagroq2(request):
     if not prompt:
         return Response({"error": "No prompt provided."}, status=status.HTTP_400_BAD_REQUEST)
     
-    client = Groq(api_key="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")
+    client = Groq(api_key="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")
     completion = client.chat.completions.create(
     model="gemma-7b-it",
     messages=[
@@ -203,7 +203,7 @@ def llmagroq3(request):
     if not prompt:
         return Response({"error": "No prompt provided."}, status=status.HTTP_400_BAD_REQUEST)
     
-    client = Groq(api_key="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")
+    client = Groq(api_key="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")
     completion = client.chat.completions.create(
     model="gemma2-9b-it",
     messages=[
